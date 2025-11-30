@@ -10,7 +10,7 @@ on:
       - main
 
   schedule:
-    - cron: "5 16 * * *"   # 中国时间每天 00:05（UTC+8）
+    - cron: "5 17 * * *"   # 中国时间每天 01:05（UTC+8）
 
   workflow_dispatch:
 
