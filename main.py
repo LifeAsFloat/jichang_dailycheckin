@@ -1,4 +1,6 @@
-import requests, json, re, os, time
+import requests, json, re, os
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 session = requests.session()
 # 配置用户名（一般是邮箱）
@@ -14,6 +16,7 @@ SCKEY = os.environ.get('SCKEY')
 # PUSHPLUS
 Token = os.environ.get('TOKEN')
 QQToken = os.environ.get('QQTOKEN')
+QQ = os.environ.get('QQ')
 def push(content):
     if SCKEY != '1':
         url = "https://sctapi.ftqq.com/{}.send?title={}&desp={}".format(SCKEY, 'ikuuu签到', content)
@@ -25,9 +28,13 @@ def push(content):
         resp = requests.post(f'http://www.pushplus.plus/send', json=qq_payload, headers=headers).json()
         print('push+推送成功' if resp['code'] == 200 else 'push+推送失败')
     else:
-        tim = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        # 指定时区为上海
+        cn_tz = ZoneInfo("Asia/Shanghai")
+        # 获取该时区的当前时间并格式化
+        tim = datetime.now(cn_tz).strftime('%Y-%m-%d %H:%M:%S')
+        # tim = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         headers = {'Content-Type': 'application/json'}
-        qq_payload = {"user_id": "156402944", "message": [{"type": "text", "data": {"text": tim + ":ikuuu" + content}}]}
+        qq_payload = {"user_id": QQ, "message": [{"type": "text", "data": {"text": tim + ":ikuuu" + content}}]}
         # resp = requests.post(f'https://qq.czys.xn--6qq986b3xl/send_private_msg', json=qq_payload, headers=headers).json()
         # print('QQ推送成功' if resp['status'] == 'ok' else 'QQ推送失败')
         # print(resp)

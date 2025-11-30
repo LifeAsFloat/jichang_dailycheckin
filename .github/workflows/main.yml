@@ -47,6 +47,7 @@ jobs:
           SCKEY: ${{ secrets.SCKEY }}
           TOKEN: ${{ secrets.TOKEN }}
           QQTOKEN: ${{ secrets.QQTOKEN }}
+          QQ: ${{ secrets.QQ }}
           EMAIL: ${{ vars.EMAIL }}
           PASSWD: ${{ vars.PASSWD }}
         run: |
