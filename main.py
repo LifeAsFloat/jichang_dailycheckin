@@ -24,13 +24,28 @@ def push(content):
         resp = requests.post(f'http://www.pushplus.plus/send', json=qq_payload, headers=headers).json()
         print('push+推送成功' if resp['code'] == 200 else 'push+推送失败')
     else:
-        tim = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        headers = {'Content-Type': 'application/json'}
-        qq_payload = {"user_id": "156402944", "message": [{"type": "text", "data": {"text": tim + ":ikuuu" + content}}]}
-        resp = requests.post(f'https://qq.czys.xn--6qq986b3xl/send_private_msg', json=qq_payload, headers=headers).json()
-        print('QQ推送成功' if resp['status'] == 'ok' else 'QQ推送失败')
-        print(resp)
+        # tim = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        # headers = {'Content-Type': 'application/json'}
+        # qq_payload = {"user_id": "156402944", "message": [{"type": "text", "data": {"text": tim + ":ikuuu" + content}}]}
+        # resp = requests.post(f'https://qq.czys.xn--6qq986b3xl/send_private_msg', json=qq_payload, headers=headers).json()
+        # print('QQ推送成功' if resp['status'] == 'ok' else 'QQ推送失败')
+        # print(resp)
         # print('未使用消息推送推送！')
+        # 1. 先发起请求，不加 .json()
+        url = 'https://qq.czys.xn--6qq986b3xl/send_private_msg'
+        resp = requests.post(url, json=qq_payload, headers=headers)
+
+        # 2. 打印关键调试信息
+        print(f"【调试信息】状态码: {resp.status_code}")
+        print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
+
+        # 3. 尝试解析，如果不通则抛出异常
+        try:
+            resp_json = resp.json()
+        except Exception:
+            print("【调试结论】服务器返回的不是JSON，可能是IP被墙或参数错误。")
+            # 为了让脚本不报错退出，可以给个空字典或者 pass
+            resp_json = {}
 
 # 会不定时更新域名，记得Sync fork
 
