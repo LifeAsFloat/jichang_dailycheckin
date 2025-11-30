@@ -24,13 +24,13 @@ def push(content):
         resp = requests.post(f'http://www.pushplus.plus/send', json=qq_payload, headers=headers).json()
         print('push+推送成功' if resp['code'] == 200 else 'push+推送失败')
     else:
-        # tim = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-        # headers = {'Content-Type': 'application/json'}
-        # qq_payload = {"user_id": "156402944", "message": [{"type": "text", "data": {"text": tim + ":ikuuu" + content}}]}
-        # resp = requests.post(f'https://qq.czys.xn--6qq986b3xl/send_private_msg', json=qq_payload, headers=headers).json()
-        # print('QQ推送成功' if resp['status'] == 'ok' else 'QQ推送失败')
-        # print(resp)
-        print('未使用消息推送推送！')
+        tim = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+        headers = {'Content-Type': 'application/json'}
+        qq_payload = {"user_id": "156402944", "message": [{"type": "text", "data": {"text": tim + ":ikuuu" + content}}]}
+        resp = requests.post(f'https://qq.czys.xn--6qq986b3xl/send_private_msg', json=qq_payload, headers=headers).json()
+        print('QQ推送成功' if resp['status'] == 'ok' else 'QQ推送失败')
+        print(resp)
+        # print('未使用消息推送推送！')
 
 # 会不定时更新域名，记得Sync fork
 
