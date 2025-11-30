@@ -13,6 +13,7 @@ passwords = os.environ.get('PASSWD', '').split(',')
 SCKEY = os.environ.get('SCKEY')
 # PUSHPLUS
 Token = os.environ.get('TOKEN')
+QQToken = os.environ.get('QQTOKEN')
 def push(content):
     if SCKEY != '1':
         url = "https://sctapi.ftqq.com/{}.send?title={}&desp={}".format(SCKEY, 'ikuuu签到', content)
@@ -32,7 +33,7 @@ def push(content):
         # print(resp)
         # print('未使用消息推送推送！')
         # 1. 先发起请求，不加 .json()
-        url = 'https://qq.czys.xn--6qq986b3xl/send_private_msg?access_token=qwerqwer'
+        url = 'https://qq.czys.xn--6qq986b3xl/send_private_msg?access_token={QQToken}'
         resp = requests.post(url, json=qq_payload, headers=headers)
 
         # 2. 打印关键调试信息

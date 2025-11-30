@@ -46,6 +46,7 @@ jobs:
         env:
           SCKEY: ${{ secrets.SCKEY }}
           TOKEN: ${{ secrets.TOKEN }}
+          QQTOKEN: ${{ secrets.QQTOKEN }}
           EMAIL: ${{ vars.EMAIL }}
           PASSWD: ${{ vars.PASSWD }}
         run: |
