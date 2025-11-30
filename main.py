@@ -33,7 +33,7 @@ def push(content):
         # print(resp)
         # print('未使用消息推送推送！')
         # 1. 先发起请求，不加 .json()
-        url = 'https://qq.czys.xn--6qq986b3xl/send_private_msg?access_token={QQToken}'
+        url = f'https://qq.czys.xn--6qq986b3xl/send_private_msg?access_token={QQToken}'
         resp = requests.post(url, json=qq_payload, headers=headers)
 
         # 2. 打印关键调试信息
