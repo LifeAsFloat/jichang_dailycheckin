@@ -20,16 +20,16 @@ QQ = os.environ.get('QQ')
 QQURL = os.environ.get('QQURL')
 MOEPUSH = os.environ.get('MOEPUSH')
 def push(content):
-    if SCKEY != '1':
+    if SCKEY and SCKEY != '1':
         url = "https://sctapi.ftqq.com/{}.send?title={}&desp={}".format(SCKEY, 'ikuuu签到', content)
         requests.post(url)
         print('推送完成')
-    elif Token != '1':
+    elif Token and Token != '1':
         headers = {'Content-Type': 'application/json'}
         qq_payload = {"token": Token, 'title': 'ikuuu签到', 'content': content, "template": "json"}
         resp = requests.post(f'http://www.pushplus.plus/send', json=qq_payload, headers=headers).json()
         print('push+推送成功' if resp['code'] == 200 else 'push+推送失败')
-    else:
+    elif QQURL and QQToken and QQ:
         # 指定时区为上海
         cn_tz = ZoneInfo("Asia/Shanghai")
         # 获取该时区的当前时间并格式化
@@ -49,21 +49,24 @@ def push(content):
         print(f"【调试信息】状态码: {resp.status_code}")
         print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
 
-        moepush_payload = {"time": tim, 'title': 'ikuuu签到', 'content': content}
+        if MOEPUSH:
+            moepush_payload = {"time": tim, 'title': 'ikuuu签到', 'content': content}
 
-        resp = requests.post(MOEPUSH, json=moepush_payload, headers=headers)
+            resp = requests.post(MOEPUSH, json=moepush_payload, headers=headers)
 
-        # 3. 打印关键调试信息
-        print(f"【调试信息】状态码: {resp.status_code}")
-        print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
+            # 3. 打印关键调试信息
+            print(f"【调试信息】状态码: {resp.status_code}")
+            print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
 
-        # 3. 尝试解析，如果不通则抛出异常
-        try:
-            resp_json = resp.json()
-        except Exception:
-            print("【调试结论】服务器返回的不是JSON，可能是IP被墙或参数错误。")
-            # 为了让脚本不报错退出，可以给个空字典或者 pass
-            resp_json = {}
+            # 3. 尝试解析，如果不通则抛出异常
+            try:
+                resp_json = resp.json()
+            except Exception:
+                print("【调试结论】服务器返回的不是JSON，可能是IP被墙或参数错误。")
+                # 为了让脚本不报错退出，可以给个空字典或者 pass
+                resp_json = {}
+    else:
+        print('未配置推送服务')
 
 # 会不定时更新域名，记得Sync fork
 
