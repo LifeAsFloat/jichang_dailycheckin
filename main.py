@@ -17,6 +17,8 @@ SCKEY = os.environ.get('SCKEY')
 Token = os.environ.get('TOKEN')
 QQToken = os.environ.get('QQTOKEN')
 QQ = os.environ.get('QQ')
+QQURL = os.environ.get('QQURL')
+MOEPUSH = os.environ.get('MOEPUSH')
 def push(content):
     if SCKEY != '1':
         url = "https://sctapi.ftqq.com/{}.send?title={}&desp={}".format(SCKEY, 'ikuuu签到', content)
@@ -40,10 +42,18 @@ def push(content):
         # print(resp)
         # print('未使用消息推送推送！')
         # 1. 先发起请求，不加 .json()
-        url = f'https://qq.czys.xn--6qq986b3xl/send_private_msg?access_token={QQToken}'
+        url = f'{QQURL}?access_token={QQToken}'
         resp = requests.post(url, json=qq_payload, headers=headers)
 
         # 2. 打印关键调试信息
+        print(f"【调试信息】状态码: {resp.status_code}")
+        print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
+
+        moepush_payload = {"time": tim, 'title': 'ikuuu签到', 'content': content}
+
+        resp = requests.post(MOEPUSH, json=moepush_payload, headers=headers)
+
+        # 3. 打印关键调试信息
         print(f"【调试信息】状态码: {resp.status_code}")
         print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
 
@@ -62,7 +72,7 @@ check_url = 'https://ikuuu.nl/user/checkin'
 info_url = 'https://ikuuu.nl/user/profile'
 
 header = {
-        'origin': 'https://ikuuu.boo',
+        'origin': 'https://ikuuu.nl',
         'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
 }
 
