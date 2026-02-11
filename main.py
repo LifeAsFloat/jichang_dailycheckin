@@ -62,29 +62,29 @@ def push(content):
         except requests.exceptions.RequestException as e:
             print(f"【调试信息】请求失败: {str(e)}")
 
-        if MOEPUSH:
-            moepush_payload = {"time": tim, 'title': 'ikuuu签到', 'content': content}
-            moepush_headers = {
+        
+        moepush_payload = {"time": tim, 'title': 'ikuuu签到', 'content': content}
+        moepush_headers = {
                 'Content-Type': 'application/json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'application/json',
                 'Connection': 'keep-alive'
             }
+        try:
+            resp = requests.post(MOEPUSH, json=moepush_payload, headers=moepush_headers, timeout=10)
+
+            # 3. 打印关键调试信息
+            print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
+            print(f"【调试信息】MOEPUSH返回内容: {resp.text}")
+
+            # 3. 尝试解析，如果不通则抛出异常
             try:
-                resp = requests.post(MOEPUSH, json=moepush_payload, headers=moepush_headers, timeout=10)
-
-                # 3. 打印关键调试信息
-                print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
-                print(f"【调试信息】MOEPUSH返回内容: {resp.text}")
-
-                # 3. 尝试解析，如果不通则抛出异常
-                try:
-                    resp_json = resp.json()
-                except Exception:
-                    print("【调试结论】服务器返回的不是JSON，可能是IP被墙或参数错误。")
-                    resp_json = {}
-            except requests.exceptions.RequestException as e:
-                print(f"【调试信息】MOEPUSH请求失败: {str(e)}")
+                resp_json = resp.json()
+            except Exception:
+                print("【调试结论】服务器返回的不是JSON，可能是IP被墙或参数错误。")
+                resp_json = {}
+        except requests.exceptions.RequestException as e:
+            print(f"【调试信息】MOEPUSH请求失败: {str(e)}")
 
 # 会不定时更新域名，记得Sync fork
 
