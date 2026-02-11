@@ -28,7 +28,7 @@ def push(content):
         qq_payload = {"token": Token, 'title': 'ikuuu签到', 'content': content, "template": "json"}
         resp = requests.post(f'http://www.pushplus.plus/send', json=qq_payload, headers=headers).json()
         print('push+推送成功' if resp['code'] == 200 else 'push+推送失败')
-    elif QQURL and QQToken and QQ:
+    else:
         # 指定时区为上海
         cn_tz = ZoneInfo("Asia/Shanghai")
         # 获取该时区的当前时间并格式化
@@ -64,9 +64,7 @@ def push(content):
                 print("【调试结论】服务器返回的不是JSON，可能是IP被墙或参数错误。")
                 # 为了让脚本不报错退出，可以给个空字典或者 pass
                 resp_json = {}
-    else:
-        print('未配置推送服务')
-
+                
 # 会不定时更新域名，记得Sync fork
 
 login_url = 'https://ikuuu.nl/auth/login'
