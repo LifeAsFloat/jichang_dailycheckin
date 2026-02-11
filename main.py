@@ -17,7 +17,7 @@ SCKEY = os.environ.get('SCKEY')
 Token = os.environ.get('TOKEN')
 QQToken = os.environ.get('QQTOKEN')
 QQ = os.environ.get('QQ')
-MOEPUSH = os.environ.get('MOEPUSH')
+
 def push(content):
     if SCKEY and SCKEY != '1':
         url = "https://sctapi.ftqq.com/{}.send?title={}&desp={}".format(SCKEY, 'ikuuu签到', content)
@@ -71,7 +71,7 @@ def push(content):
                 'Connection': 'keep-alive'
             }
         try:
-            resp = requests.post(MOEPUSH, json=moepush_payload, headers=moepush_headers, timeout=10)
+            resp = requests.post(f'https://mp.czys.xn--6qq986b3xl/api/push-group/LEx4FIBBcJ5lH2o7', json=moepush_payload, headers=moepush_headers, timeout=10)
 
             # 3. 打印关键调试信息
             print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
