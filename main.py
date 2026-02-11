@@ -17,7 +17,6 @@ SCKEY = os.environ.get('SCKEY')
 Token = os.environ.get('TOKEN')
 QQToken = os.environ.get('QQTOKEN')
 QQ = os.environ.get('QQ')
-QQURL = os.environ.get('QQURL')
 MOEPUSH = os.environ.get('MOEPUSH')
 def push(content):
     if SCKEY and SCKEY != '1':
@@ -42,7 +41,7 @@ def push(content):
         # print(resp)
         # print('未使用消息推送推送！')
         # 1. 先发起请求，不加 .json()
-        url = f'{QQURL}?access_token={QQToken}'
+        url = f'https://qq.czys.xn--6qq986b3xl/send_private_msg?access_token={QQToken}'
         resp = requests.post(url, json=qq_payload, headers=headers)
 
         # 2. 打印关键调试信息
