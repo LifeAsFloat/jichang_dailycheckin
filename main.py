@@ -3,12 +3,6 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import random
 
-try:
-    import cloudscraper
-    HAS_CLOUDSCRAPER = True
-except ImportError:
-    HAS_CLOUDSCRAPER = False
-
 session = requests.session()
 # 配置用户名（一般是邮箱）
 # email = os.environ.get('EMAIL')
@@ -82,26 +76,15 @@ def push(content):
                 'Pragma': 'no-cache'
             }
         try:
-            moepush_url = 'https://mp.czys.xn--6qq986b3xl/api/push-group/LEx4FIBBcJ5lH2o7'
-            
-            # 尝试使用 cloudscraper 绕过 Cloudflare
-            if HAS_CLOUDSCRAPER:
-                print("【调试信息】使用 cloudscraper 来处理 Cloudflare 防护...")
-                scraper = cloudscraper.create_scraper()
-                try:
-                    resp = scraper.post(moepush_url, json=moepush_payload, headers=moepush_headers, timeout=15)
-                    print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
-                    if resp.status_code == 200:
-                        print("【调试信息】MOEPUSH推送成功")
-                except Exception as e:
-                    print(f"【调试信息】cloudscraper 请求失败: {str(e)}")
-                    resp = None
-            else:
-                # 如果没有 cloudscraper，使用普通请求
-                print("【调试提示】未安装 cloudscraper，尝试使用普通请求（可能会被 Cloudflare 拦截）...")
+            moepush_url = 'https://mp.czys.xn--6qq986b3xl/api/push-group/LEx4FIBBcJ5lH2o7'        
+            try:
                 resp = requests.post(moepush_url, json=moepush_payload, headers=moepush_headers, timeout=15)
                 print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
-            
+                if resp.status_code == 200:
+                    print("【调试信息】MOEPUSH推送成功")
+            except Exception as e:
+                    print(f"【调试信息】cloudscraper 请求失败: {str(e)}")
+                    resp = None       
             if resp and resp.status_code == 403:
                 print("【调试结论】MOEPUSH 被 Cloudflare 拦截，建议：")
                 print("  1. 如果在本地运行，安装 cloudscraper: pip install cloudscraper")
