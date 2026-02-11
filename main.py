@@ -1,6 +1,13 @@
-import requests, json, re, os
+import requests, json, re, os, time
 from datetime import datetime
 from zoneinfo import ZoneInfo
+import random
+
+try:
+    import cloudscraper
+    HAS_CLOUDSCRAPER = True
+except ImportError:
+    HAS_CLOUDSCRAPER = False
 
 session = requests.session()
 # 配置用户名（一般是邮箱）
@@ -68,23 +75,47 @@ def push(content):
                 'Content-Type': 'application/json',
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'application/json',
-                'Connection': 'keep-alive'
+                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'Connection': 'keep-alive',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
             }
         try:
-            resp = requests.post(f'https://mp.czys.xn--6qq986b3xl/api/push-group/LEx4FIBBcJ5lH2o7', json=moepush_payload, headers=moepush_headers, timeout=10)
-
-            # 3. 打印关键调试信息
-            print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
-            print(f"【调试信息】MOEPUSH返回内容: {resp.text}")
-
-            # 3. 尝试解析，如果不通则抛出异常
-            try:
-                resp_json = resp.json()
-            except Exception:
-                print("【调试结论】服务器返回的不是JSON，可能是IP被墙或参数错误。")
-                resp_json = {}
+            moepush_url = 'https://mp.czys.xn--6qq986b3xl/api/push-group/LEx4FIBBcJ5lH2o7'
+            
+            # 尝试使用 cloudscraper 绕过 Cloudflare
+            if HAS_CLOUDSCRAPER:
+                print("【调试信息】使用 cloudscraper 来处理 Cloudflare 防护...")
+                scraper = cloudscraper.create_scraper()
+                try:
+                    resp = scraper.post(moepush_url, json=moepush_payload, headers=moepush_headers, timeout=15)
+                    print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
+                    if resp.status_code == 200:
+                        print("【调试信息】MOEPUSH推送成功")
+                except Exception as e:
+                    print(f"【调试信息】cloudscraper 请求失败: {str(e)}")
+                    resp = None
+            else:
+                # 如果没有 cloudscraper，使用普通请求
+                print("【调试提示】未安装 cloudscraper，尝试使用普通请求（可能会被 Cloudflare 拦截）...")
+                resp = requests.post(moepush_url, json=moepush_payload, headers=moepush_headers, timeout=15)
+                print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
+            
+            if resp and resp.status_code == 403:
+                print("【调试结论】MOEPUSH 被 Cloudflare 拦截，建议：")
+                print("  1. 如果在本地运行，安装 cloudscraper: pip install cloudscraper")
+                print("  2. 如果在 GitHub Actions 运行，可能是 IP 被标记，请更换其他推送服务")
+                print("  3. 可以忽略此错误，程序会继续运行")
+            elif resp and resp.status_code == 200:
+                try:
+                    resp_json = resp.json()
+                    print(f"【调试信息】MOEPUSH 返回: {resp_json}")
+                except Exception:
+                    print("【调试结论】MOEPUSH 返回非 JSON 格式，但状态码为 200")
         except requests.exceptions.RequestException as e:
-            print(f"【调试信息】MOEPUSH请求失败: {str(e)}")
+            print(f"【调试信息】MOEPUSH 请求异常: {str(e)}")
+            print("【调试建议】请检查网络连接或 MOEPUSH 服务是否可用")
 
 # 会不定时更新域名，记得Sync fork
 
