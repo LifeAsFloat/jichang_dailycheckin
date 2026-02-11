@@ -42,29 +42,50 @@ def push(content):
         # print('未使用消息推送推送！')
         # 1. 先发起请求，不加 .json()
         url = f'https://qq.czys.xn--6qq986b3xl/send_private_msg?access_token={QQToken}'
-        resp = requests.post(url, json=qq_payload, headers=headers)
+        qq_headers = {
+            'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+            'Connection': 'keep-alive'
+        }
+        try:
+            resp = requests.post(url, json=qq_payload, headers=qq_headers, timeout=10)
 
-        # 2. 打印关键调试信息
-        print(f"【调试信息】状态码: {resp.status_code}")
-        print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
+            # 2. 打印关键调试信息
+            print(f"【调试信息】状态码: {resp.status_code}")
+            print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
+            
+            # 如果是403错误，提示用户检查
+            if resp.status_code == 403:
+                print("【调试结论】请求被防火墙拦截，请检查API服务是否可用")
+        except requests.exceptions.RequestException as e:
+            print(f"【调试信息】请求失败: {str(e)}")
 
         if MOEPUSH:
             moepush_payload = {"time": tim, 'title': 'ikuuu签到', 'content': content}
-
-            resp = requests.post(MOEPUSH, json=moepush_payload, headers=headers)
-
-            # 3. 打印关键调试信息
-            print(f"【调试信息】状态码: {resp.status_code}")
-            print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
-
-            # 3. 尝试解析，如果不通则抛出异常
+            moepush_headers = {
+                'Content-Type': 'application/json',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'application/json',
+                'Connection': 'keep-alive'
+            }
             try:
-                resp_json = resp.json()
-            except Exception:
-                print("【调试结论】服务器返回的不是JSON，可能是IP被墙或参数错误。")
-                # 为了让脚本不报错退出，可以给个空字典或者 pass
-                resp_json = {}
-                
+                resp = requests.post(MOEPUSH, json=moepush_payload, headers=moepush_headers, timeout=10)
+
+                # 3. 打印关键调试信息
+                print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
+                print(f"【调试信息】MOEPUSH返回内容: {resp.text}")
+
+                # 3. 尝试解析，如果不通则抛出异常
+                try:
+                    resp_json = resp.json()
+                except Exception:
+                    print("【调试结论】服务器返回的不是JSON，可能是IP被墙或参数错误。")
+                    resp_json = {}
+            except requests.exceptions.RequestException as e:
+                print(f"【调试信息】MOEPUSH请求失败: {str(e)}")
+
 # 会不定时更新域名，记得Sync fork
 
 login_url = 'https://ikuuu.nl/auth/login'
@@ -73,7 +94,12 @@ info_url = 'https://ikuuu.nl/user/profile'
 
 header = {
         'origin': 'https://ikuuu.nl',
-        'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36'
+        'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'accept': 'application/json, text/plain, */*',
+        'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
+        'accept-encoding': 'gzip, deflate, br',
+        'cache-control': 'no-cache',
+        'pragma': 'no-cache'
 }
 
 for email, passwd in zip(emails, passwords):
