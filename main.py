@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 import random
 
 # 【修改1】改为从环境变量获取 COOKIES，多个账号使用 ---- 分隔
-raw_cookies = os.environ.get('COOKIES', '')
+raw_cookies = os.environ.get('COOKIES')
 cookies_list = [c.strip() for c in raw_cookies.split('----') if c.strip()]
  
 # server酱
