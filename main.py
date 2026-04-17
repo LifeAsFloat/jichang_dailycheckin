@@ -3,14 +3,9 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import random
 
-session = requests.session()
-# 配置用户名（一般是邮箱）
-# email = os.environ.get('EMAIL')
-# 配置用户名对应的密码 和上面的email对应上
-# passwd = os.environ.get('PASSWD')
-# 从设置的环境变量中的Variables多个邮箱和密码 ,分割
-emails = os.environ.get('EMAIL', '').split(',')
-passwords = os.environ.get('PASSWD', '').split(',')
+# 【修改1】改为从环境变量获取 COOKIES，多个账号使用 ---- 分隔
+raw_cookies = os.environ.get('COOKIES', '')
+cookies_list = [c.strip() for c in raw_cookies.split('----') if c.strip()]
  
 # server酱
 SCKEY = os.environ.get('SCKEY')
@@ -19,6 +14,7 @@ Token = os.environ.get('TOKEN')
 QQToken = os.environ.get('QQTOKEN')
 QQ = os.environ.get('QQ')
 
+# 推送逻辑保持不变
 def push(content):
     if SCKEY and SCKEY != '1':
         url = "https://sctapi.ftqq.com/{}.send?title={}&desp={}".format(SCKEY, 'ikuuu签到', content)
@@ -32,16 +28,10 @@ def push(content):
     else:
         # 指定时区为上海
         cn_tz = ZoneInfo("Asia/Shanghai")
-        # 获取该时区的当前时间并格式化
         tim = datetime.now(cn_tz).strftime('%Y-%m-%d %H:%M:%S')
-        # tim = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         headers = {'Content-Type': 'application/json'}
         qq_payload = {"user_id": QQ, "message": [{"type": "text", "data": {"text": tim + ":ikuuu" + content}}]}
-        # resp = requests.post(f'https://qq.czys.xn--6qq986b3xl/send_private_msg', json=qq_payload, headers=headers).json()
-        # print('QQ推送成功' if resp['status'] == 'ok' else 'QQ推送失败')
-        # print(resp)
-        # print('未使用消息推送推送！')
-        # 1. 先发起请求，不加 .json()
+        
         url = f'https://qq.czys.xn--6qq986b3xl/send_private_msg?access_token={QQToken}'
         qq_headers = {
             'Content-Type': 'application/json',
@@ -52,18 +42,14 @@ def push(content):
         }
         try:
             resp = requests.post(url, json=qq_payload, headers=qq_headers, timeout=10)
-
-            # 2. 打印关键调试信息
             print(f"【调试信息】状态码: {resp.status_code}")
-            print(f"【调试信息】返回内容: {resp.text}")  # 这里会显示服务器到底吐出了什么
+            print(f"【调试信息】返回内容: {resp.text}")  
             
-            # 如果是403错误，提示用户检查
             if resp.status_code == 403:
                 print("【调试结论】请求被防火墙拦截，请检查API服务是否可用")
         except requests.exceptions.RequestException as e:
             print(f"【调试信息】请求失败: {str(e)}")
 
-        
         moepush_payload = {"time": tim, 'title': 'ikuuu签到', 'content': content}
         moepush_headers = {
                 'Content-Type': 'application/json',
@@ -101,11 +87,10 @@ def push(content):
             print("【调试建议】请检查网络连接或 MOEPUSH 服务是否可用")
 
 # 会不定时更新域名，记得Sync fork
-
-login_url = 'https://ikuuu.nl/auth/login'
+# 【修改2】不再需要 login_url，直接请求 check_url
 check_url = 'https://ikuuu.nl/user/checkin'
-info_url = 'https://ikuuu.nl/user/profile'
 
+# 基础请求头
 header = {
         'origin': 'https://ikuuu.nl',
         'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -116,26 +101,46 @@ header = {
         'pragma': 'no-cache'
 }
 
-for email, passwd in zip(emails, passwords):
-    session = requests.session()
-    data = {
-        'email': email,
-        'passwd': passwd
-    }
+if not cookies_list:
+    print("❌ 未获取到 COOKIES，请检查环境变量配置。")
+    exit(1)
+
+# 【修改3】遍历 Cookie 列表进行签到
+for index, cookie in enumerate(cookies_list):
+    account_name = f"账号 {index + 1}"
+    print(f'\n[{account_name}] 开始签到...')
+    
+    # 每次循环复制一份 Header，并放入当前账号的 Cookie
+    current_headers = header.copy()
+    current_headers['cookie'] = cookie
+    
     try:
-        print(f'[{email}] 进行登录...')
-        response = json.loads(session.post(url=login_url,headers=header,data=data).text)
-        print(response['msg'])
-        # 获取账号名称
-        # info_html = session.get(url=info_url,headers=header).text
-        # info = "".join(re.findall('<span class="user-name text-bold-600">(.*?)</span>', info_html, re.S))
-        # 进行签到
-        result = json.loads(session.post(url=check_url,headers=header).text)
-        print(result['msg'])
-        content = result['msg']
-        # 进行推送
-        push(content)
-    except:
-        content = '签到失败'
+        # 直接发起签到请求
+        response = requests.post(url=check_url, headers=current_headers, timeout=10)
+        
+        # 解析返回结果
+        try:
+            result = response.json()
+            msg = result.get('msg', '签到成功 (未返回具体msg)')
+            content = f"{account_name}: {msg}"
+            print(content)
+            
+            # 进行推送
+            push(content)
+            
+        except json.JSONDecodeError:
+            # 如果 Cookie 失效，面板通常会重定向到登录页(HTML)，导致 JSON 解析失败
+            content = f"{account_name}: 签到失败，Cookie可能已过期或被防火墙拦截"
+            print(content)
+            push(content)
+            
+    except Exception as e:
+        content = f'{account_name}: 请求报错 - {str(e)}'
         print(content)
         push(content)
+    
+    # 【优化】如果是多账号，每次签到后随机暂停 2~5 秒，防止并发过高被封 IP
+    if index < len(cookies_list) - 1:
+        sleep_time = random.randint(2, 5)
+        print(f"等待 {sleep_time} 秒后处理下一个账号...")
+        time.sleep(sleep_time)
