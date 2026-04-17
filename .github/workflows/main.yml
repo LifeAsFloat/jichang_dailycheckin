@@ -50,5 +50,6 @@ jobs:
           QQ: ${{ secrets.QQ }}
           EMAIL: ${{ vars.EMAIL }}
           PASSWD: ${{ vars.PASSWD }}
+          COOKIES: ${{ secrets.COOKIES }}
         run: |
           python3 ./main.py
