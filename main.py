@@ -88,11 +88,11 @@ def push(content):
 
 # 会不定时更新域名，记得Sync fork
 # 【修改2】不再需要 login_url，直接请求 check_url
-check_url = 'https://ikuuu.win/user/checkin'
+check_url = 'https://ikuuu.top/user/checkin'
 
 # 基础请求头
 header = {
-        'origin': 'https://ikuuu.win',
+        'origin': 'https://ikuuu.top',
         'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'accept': 'application/json, text/plain, */*',
         'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8',
