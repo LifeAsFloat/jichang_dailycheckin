@@ -62,7 +62,7 @@ def push(content):
                 'Pragma': 'no-cache'
             }
         try:
-            moepush_url = 'https://mp.czys.xn--6qq986b3xl/api/push-group/LEx4FIBBcJ5lH2o7'        
+            moepush_url = 'https://mp.czys.xn--6qq986b3xl/api/push/r6IRJzNOsbEG681o'        
             try:
                 resp = requests.post(moepush_url, json=moepush_payload, headers=moepush_headers, timeout=15)
                 print(f"【调试信息】MOEPUSH状态码: {resp.status_code}")
