@@ -1,4 +1,4 @@
-name: "Airport Checkin"
+name: Airport Checkin
 
 on:
   push:
@@ -13,6 +13,13 @@ on:
     - cron: "5 17 * * *"   # 中国时间每天 01:05（UTC+8）
 
   workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checkin-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
   RUN_ENV: "prod"
@@ -30,12 +37,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.12"
+          cache: "pip"
 
       - name: Random sleep (only for schedule)
         if: github.event_name == 'schedule'
-        run: |
-          sleep $(shuf -i 10-100 -n 1)
+        run: sleep $(shuf -i 10-100 -n 1)
 
       - name: Install dependencies
         run: |
@@ -48,8 +55,7 @@ jobs:
           TOKEN: ${{ secrets.TOKEN }}
           QQTOKEN: ${{ secrets.QQTOKEN }}
           QQ: ${{ secrets.QQ }}
-          EMAIL: ${{ vars.EMAIL }}
-          PASSWD: ${{ vars.PASSWD }}
+          EMAIL: ${{ secrets.EMAIL }}
+          PASSWD: ${{ secrets.PASSWD }}
           COOKIES: ${{ secrets.COOKIES }}
-        run: |
-          python3 ./main.py
+        run: python ./main.py
